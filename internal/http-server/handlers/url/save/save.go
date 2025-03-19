@@ -10,24 +10,12 @@ import (
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/exp/slog"
 
+	"url-shortener/internal/http-server/handlers/url"
 	resp "url-shortener/internal/lib/api/response"
 	"url-shortener/internal/lib/logger/sl"
 	"url-shortener/internal/lib/random"
 	"url-shortener/internal/storage"
 )
-
-type Request struct {
-	URL   string `json:"url" validate:"required,url"`
-	Alias string `json:"alias,omitempty"`
-}
-
-type Response struct {
-	resp.Response
-	Alias string `json:"alias,omitempty"`
-}
-
-// TODO: move to config if needed
-const aliasLength = 6
 
 //go:generate go run github.com/vektra/mockery/v2@v2.28.2 --name=URLSaver
 type URLSaver interface {
@@ -43,7 +31,7 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		var req Request
+		var req url.Request
 
 		err := render.DecodeJSON(r.Body, &req)
 		if errors.Is(err, io.EOF) {
@@ -77,7 +65,7 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 
 		alias := req.Alias
 		if alias == "" {
-			alias = random.NewRandomString(aliasLength)
+			alias = random.NewRandomString(url.AliasLength)
 		}
 
 		id, err := urlSaver.SaveURL(req.URL, alias)
@@ -98,13 +86,6 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 
 		log.Info("url added", slog.Int64("id", id))
 
-		responseOK(w, r, alias)
+		url.ResponseOK(w, r, alias)
 	}
-}
-
-func responseOK(w http.ResponseWriter, r *http.Request, alias string) {
-	render.JSON(w, r, Response{
-		Response: resp.OK(),
-		Alias:    alias,
-	})
 }

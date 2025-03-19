@@ -9,7 +9,7 @@ import (
 	"github.com/gavv/httpexpect/v2"
 	"github.com/stretchr/testify/require"
 
-	"url-shortener/internal/http-server/handlers/url/save"
+	shurl "url-shortener/internal/http-server/handlers/url"
 	"url-shortener/internal/lib/api"
 	"url-shortener/internal/lib/random"
 )
@@ -26,7 +26,7 @@ func TestURLShortener_HappyPath(t *testing.T) {
 	e := httpexpect.Default(t, u.String())
 
 	e.POST("/url").
-		WithJSON(save.Request{
+		WithJSON(shurl.Request{
 			URL:   gofakeit.URL(),
 			Alias: random.NewRandomString(10),
 		}).
@@ -76,7 +76,7 @@ func TestURLShortener_SaveRedirect(t *testing.T) {
 			// Save
 
 			resp := e.POST("/url").
-				WithJSON(save.Request{
+				WithJSON(shurl.Request{
 					URL:   tc.url,
 					Alias: tc.alias,
 				}).

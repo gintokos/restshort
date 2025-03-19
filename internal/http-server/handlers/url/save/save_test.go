@@ -8,13 +8,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
-
+	"url-shortener/internal/http-server/handlers/url"
 	"url-shortener/internal/http-server/handlers/url/save"
 	"url-shortener/internal/http-server/handlers/url/save/mocks"
 	"url-shortener/internal/lib/logger/handlers/slogdiscard"
+
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSaveHandler(t *testing.T) {
@@ -84,7 +84,7 @@ func TestSaveHandler(t *testing.T) {
 
 			body := rr.Body.String()
 
-			var resp save.Response
+			var resp url.Response
 
 			require.NoError(t, json.Unmarshal([]byte(body), &resp))
 

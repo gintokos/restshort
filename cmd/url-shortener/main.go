@@ -15,6 +15,7 @@ import (
 	"url-shortener/internal/config"
 	"url-shortener/internal/http-server/handlers/redirect"
 	"url-shortener/internal/http-server/handlers/url/save"
+	"url-shortener/internal/http-server/handlers/url/delete"
 	mwLogger "url-shortener/internal/http-server/middleware/logger"
 	"url-shortener/internal/lib/logger/handlers/slogpretty"
 	"url-shortener/internal/lib/logger/sl"
@@ -59,7 +60,14 @@ func main() {
 		}))
 
 		r.Post("/", save.New(log, storage))
-		// TODO: add DELETE /url/{id}
+	})
+
+	router.Route("/delete", func(r chi.Router) {
+		r.Use(middleware.BasicAuth("url-shortener", map[string]string{
+			cfg.HTTPServer.User: cfg.HTTPServer.Password,
+		}))
+
+		r.Post("/", delete.New(log, storage))
 	})
 
 	router.Get("/{alias}", redirect.New(log, storage))
